@@ -25,6 +25,49 @@ mingw32-make
 
 Run the test program by executing search.exe
 
+### Indexed search
+```
+search> base C:\derrick
+Base directory [C:\derrick]
+search> index
+search> list
+C:\derrick\.git\COMMIT_EDITMSG (25b)
+C:\derrick\.git\config (300b)
+C:\derrick\.git\description (73b)
+...
+C:\derrick\derrick.c (15285b)
+C:\derrick\derrick.h (3672b)
+C:\derrick\LICENSE.md (1093b)
+C:\derrick\main.c (5527b)
+C:\derrick\README.md (1006b)
+C:\derrick\search.pro (888b)
+C:\derrick\search.pro.user (25488b)
+search> find Mathieu Allory
+C:\derrick\derrick.h
+[ * @author      Mathieu Allory]
+C:\derrick\README.md
+[* **Mathieu Allory** - *Initial work*]
+```
+**Notes:**
+- index must be called before find and list
+- list command is not mandatory
+
+### Deep file search
+```
+search> base C:\derrick
+Base directory [C:\derrick]
+search> count
+Number of files: 7
+search> search Mathieu Allory
+C:\derrick\derrick.h
+[ * @author      Mathieu Allory]
+C:\derrick\README.md
+[* **Mathieu Allory** - *Initial work*]
+```
+**Notes:**
+- dfs example callback excludes .git directory from search
+- count command is not mandatory
+
 ## Authors
 
 * **Mathieu Allory** - *Initial work*
