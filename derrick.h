@@ -59,14 +59,48 @@ struct Derrick_EntryHeader_s
 };
 
 /**
- * @brief derrick_index_build
- * @param io_index
- * @param i_path
- * @return
+ * @brief Initialize a parameter structure with neutral values
+ * @param io_cb the structure to initialize
+ */
+void derrick_init_parameters(Derrick_Parameters io_cb);
+
+/**
+ * @brief Build an in-memory index from the files contained in a given directory i_path
+ * @param io_index Address of pointer where the structure will be created
+ * @param i_path Path to index
+ * @return DERRICK_OK if no error
  */
 int derrick_index_build(DerrickIndex* io_index, const char* i_path);
-void derrick_index_list(DerrickIndex i_index);
-void derrick_index_search(DerrickIndex i_index, const char* i_searchfor, int i_case_sensitive);
 
-int derrick_count_files(const char* i_searchin);
-int derrick_deep_search(const char* i_searchfor, const char* i_searchin, int i_case_sensitive, Derrick_Parameters io_cb);
+/**
+ * @brief list on standard output the files contained in a given index
+ * @param i_index the index previously built with derrick_index_build
+ */
+void derrick_index_list(DerrickIndex i_index);
+
+/**
+ * @brief search for the file(s) containing a given string within the given index.
+ * Indexed search is very fast but consumes a lot of memory and not synchronized with hard drive.
+ * @param i_index the index previously built with derrick_index_build
+ * @param i_searchfor the string the look for
+ * @param io_cb the callbacks and parameters, see definition
+ */
+void derrick_index_search(DerrickIndex i_index, const char* i_searchfor, Derrick_Parameters io_cb);
+
+/**
+ * @brief count the files that would be searched, the same way as derrick_deep_search would do
+ * but without actually looking inside the file
+ * @param i_searchin the root path to search in
+ * @return the total number of files that matches the criteria of io_cb->cb_exclude, or -1 in case of error
+ */
+int derrick_count_files(const char* i_searchin, Derrick_Parameters io_cb);
+
+/**
+ * @brief search for the file(s) containing a given string i_searchfor in directory i_searchin by
+ * examining all the files on the disk. The actual content of every file is scanned.
+ * @param i_searchfor the string to look for
+ * @param i_searchin the root path to search in
+ * @param io_cb the callbacks and parameters, see definition
+ * @return DERRICK_OK if no error
+ */
+int derrick_deep_search(const char* i_searchfor, const char* i_searchin, Derrick_Parameters io_cb);

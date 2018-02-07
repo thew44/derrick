@@ -10,17 +10,24 @@
 #define CMD_FIND  "find"
 #define CMD_DFS   "search"
 #define CMD_BASE  "base"
+#define CMD_COUNT "count"
 
 int Callback_Exclude(void* ctx, const char* file)
 {
     // exclude files containing ".git" in their name
     if (strstr(file, ".git") != NULL) return 1;
+    // some other rules
+    if (strstr(file, ".sqlite") != NULL) return 1;
+    // OK keep it
     return 0;
 }
 
 void Callback_Found(void* ctx, const char* in, const char* where)
 {
-    printf("%s\n[%s]\n", in, where);
+    if (where)
+        printf("%s\n[%s]\n", in, where);
+    else
+        printf("%s\n", in);
 }
 
 void PrintLastErrorMessage()
@@ -116,7 +123,15 @@ int main(int argc, char *argv[])
         else if (strlen(buff) >= strlen(CMD_FIND) && !strncmp(buff, CMD_FIND, strlen(CMD_FIND)))
         {
             const char* needle = buff + strlen(CMD_FIND) + 1;
-            derrick_index_search(pIndexBuffer, needle, 1);
+            if (needle != 0)
+            {
+                struct Derrick_Parameters_s cb;
+                cb.cb_exclude = &Callback_Exclude;
+                cb.cd_found = &Callback_Found;
+                cb.ctx_exclude = 0;
+                cb.ctx_found = 0;
+                derrick_index_search(pIndexBuffer, needle, &cb);
+            }
         }
         else if (strlen(buff) >= strlen(CMD_BASE) && !strncmp(buff, CMD_BASE, strlen(CMD_BASE)))
         {
@@ -142,7 +157,19 @@ int main(int argc, char *argv[])
                 cb.cd_found = &Callback_Found;
                 cb.ctx_exclude = 0;
                 cb.ctx_found = 0;
-                derrick_deep_search(needle, base, 1, &cb);
+                derrick_deep_search(needle, base, &cb);
+            }
+        }
+        else if (strlen(buff) >= strlen(CMD_COUNT) && !strncmp(buff, CMD_COUNT, strlen(CMD_COUNT)))
+        {
+            if (base !=0)
+            {
+                struct Derrick_Parameters_s cb;
+                cb.cb_exclude = &Callback_Exclude;
+                cb.cd_found = &Callback_Found;
+                cb.ctx_exclude = 0;
+                cb.ctx_found = 0;
+                printf("Number of files: %d\n", derrick_count_files(base, &cb));
             }
         }
         else
