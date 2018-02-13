@@ -246,7 +246,11 @@ void derrick_index_list(DerrickIndex i_index)
     struct Derrick_EntryHeader_s* cur_idx = (struct Derrick_EntryHeader_s*)(i_index->index);
     while (cur_idx_cnt < i_index->number_of_entries)
     {
+#ifdef _MSC_VER
         printf("%s (%zub)\n", cur_idx->name, cur_idx->size);
+#else
+        printf("%s (%ub)\n", cur_idx->name, cur_idx->size);
+#endif
         cur_idx = Entry_Next(cur_idx);
         cur_idx_cnt++;
     }
@@ -368,7 +372,12 @@ int derrick_deep_search(const char* i_searchfor, const char *i_searchin, Derrick
                             free(line);
                         }
                     }
+#ifdef _MSC_VER
                     ++((BYTEP*)offset);
+#else
+                    ++offset;
+#endif
+
                 }
 
                 UnmapViewOfFile(pBuf);
