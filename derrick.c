@@ -1,3 +1,15 @@
+/**
+ * @file        derrick.c
+ * @author      Mathieu Allory
+ * @date        February 2018
+ * @brief       Derrick DFS: deep file search and indexing library
+ * @ref         https://github.com/thew44/derrick
+ *
+ * @details     Implementation of Derrick DFS, self-contained in a single C file
+ *
+ * @license     MIT License
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <windows.h>
@@ -5,7 +17,7 @@
 
 char* derrick_internal_find_line(const char* i_where)
 {
-    char* start = i_where;
+    const char* start = i_where;
     char c = *start;
     while (c != 0 && c != '\n' && c != '\r')
     {
@@ -14,7 +26,7 @@ char* derrick_internal_find_line(const char* i_where)
     }
     start++;
 
-    char* end = i_where;
+    const char* end = i_where;
     c = *end;
     while (c != 0 && c != '\n' && c != '\r')
     {
@@ -32,7 +44,7 @@ char* derrick_internal_find_line(const char* i_where)
 
 int derrick_internal_CalculateBufferSize(const char *sDir, LARGE_INTEGER* total_size, size_t* o_number_of_entries)
 {
-    WIN32_FIND_DATA fdFile;
+    WIN32_FIND_DATAA fdFile;
     HANDLE hFind = NULL;
 
     char sPath[2048];
@@ -40,7 +52,7 @@ int derrick_internal_CalculateBufferSize(const char *sDir, LARGE_INTEGER* total_
     //Specify a file mask. *.* = We want everything!
     sprintf(sPath, "%s\\*.*", sDir);
 
-    if((hFind = FindFirstFileA(sPath, &fdFile)) == INVALID_HANDLE_VALUE)
+    if((hFind = FindFirstFileA(sPath, (LPWIN32_FIND_DATAA)&fdFile)) == INVALID_HANDLE_VALUE)
     {
         return DERRICK_PATH_NOT_FOUND;
     }
@@ -73,8 +85,7 @@ int derrick_internal_CalculateBufferSize(const char *sDir, LARGE_INTEGER* total_
                 LARGE_INTEGER this_size;
                 this_size.QuadPart = 0;
                 if (GetFileSizeEx(hFile, &this_size) == 0)
-                {
-                    PrintLastErrorMessage();
+                { 
                     return DERRICK_ERROR;
                 }
 
@@ -95,7 +106,7 @@ int derrick_internal_FillBuffer(const char *sDir, size_t* offset, DerrickIndex i
 {
     if (sDir == 0 || io_index == 0) return DERRICK_ERROR;
 
-    WIN32_FIND_DATA fdFile;
+    WIN32_FIND_DATAA fdFile;
     HANDLE hFind = NULL;
 
     char sPath[2048];
@@ -138,7 +149,6 @@ int derrick_internal_FillBuffer(const char *sDir, size_t* offset, DerrickIndex i
                 this_size.QuadPart = 0;
                 if (GetFileSizeEx(hFile, &this_size) == 0)
                 {
-                    PrintLastErrorMessage();
                     return DERRICK_ERROR;
                 }
 
@@ -152,7 +162,6 @@ int derrick_internal_FillBuffer(const char *sDir, size_t* offset, DerrickIndex i
 
                 if (hMapFile == NULL || hMapFile == INVALID_HANDLE_VALUE)
                 {
-                    PrintLastErrorMessage();
                     return DERRICK_ERROR;
                 }
 
@@ -164,7 +173,6 @@ int derrick_internal_FillBuffer(const char *sDir, size_t* offset, DerrickIndex i
 
                 if (pBuf == NULL)
                 {
-                    PrintLastErrorMessage();
                     return DERRICK_ERROR;
                 }
 
@@ -238,7 +246,7 @@ void derrick_index_list(DerrickIndex i_index)
     struct Derrick_EntryHeader_s* cur_idx = (struct Derrick_EntryHeader_s*)(i_index->index);
     while (cur_idx_cnt < i_index->number_of_entries)
     {
-        printf("%s (%db)\n", cur_idx->name, cur_idx->size);
+        printf("%s (%zub)\n", cur_idx->name, cur_idx->size);
         cur_idx = Entry_Next(cur_idx);
         cur_idx_cnt++;
     }
@@ -258,13 +266,15 @@ int derrick_index_build(DerrickIndex* io_index, const char* i_path)
     (*io_index)->index = malloc(total_size.QuadPart);
     size_t offset = 0;
     derrick_internal_FillBuffer(i_path, &offset, *io_index);
+
+    return DERRICK_OK;
 }
 
 int derrick_deep_search(const char* i_searchfor, const char *i_searchin, Derrick_Parameters io_cb)
 {
-    if (io_cb == 0 || i_searchin == 0 || i_searchfor == 0) return;
+    if (io_cb == 0 || i_searchin == 0 || i_searchfor == 0) return DERRICK_ERROR;
 
-    WIN32_FIND_DATA fdFile;
+    WIN32_FIND_DATAA fdFile;
     HANDLE hFind = NULL;
 
     char sPath[2048];
@@ -317,7 +327,6 @@ int derrick_deep_search(const char* i_searchfor, const char *i_searchin, Derrick
                 this_size.QuadPart = 0;
                 if (GetFileSizeEx(hFile, &this_size) == 0)
                 {
-                    PrintLastErrorMessage();
                     return DERRICK_ERROR;
                 }
 
@@ -331,7 +340,6 @@ int derrick_deep_search(const char* i_searchfor, const char *i_searchin, Derrick
 
                 if (hMapFile == NULL || hMapFile == INVALID_HANDLE_VALUE)
                 {
-                    PrintLastErrorMessage();
                     return DERRICK_ERROR;
                 }
 
@@ -343,7 +351,6 @@ int derrick_deep_search(const char* i_searchfor, const char *i_searchin, Derrick
 
                 if (pBuf == NULL)
                 {
-                    PrintLastErrorMessage();
                     return DERRICK_ERROR;
                 }
 
@@ -378,10 +385,10 @@ int derrick_deep_search(const char* i_searchfor, const char *i_searchin, Derrick
 
 int derrick_count_files(const char* i_searchin, Derrick_Parameters io_cb)
 {
-    if (io_cb == 0 || i_searchin == 0) return;
+    if (io_cb == 0 || i_searchin == 0) return DERRICK_ERROR;
 
     HANDLE hFind = NULL;
-    WIN32_FIND_DATA fdFile;
+    WIN32_FIND_DATAA fdFile;
     char sPath[2048];
     int number_of_files = 0;
 

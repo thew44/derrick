@@ -1,9 +1,22 @@
+/**
+ * @file        search.c
+ * @author      Mathieu Allory
+ * @date        February 2018
+ * @brief       Derrick DFS: deep file search and indexing library
+ * @ref         https://github.com/thew44/derrick
+ *
+ * @details     Sample program that uses Derrick DFS to do indexed of plain-text search
+ *
+ * @license     MIT License
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <windows.h>
 #include "derrick.h"
 
 
+#define CMD_QUIT  "quit"
 #define CMD_INDEX "index"
 #define CMD_LIST  "list"
 #define CMD_PRINT "print"
@@ -56,7 +69,7 @@ static int getLine (char *prmpt, char *buff, size_t sz)
         printf ("%s", prmpt);
         fflush (stdout);
     }
-    if (fgets (buff, sz, stdin) == NULL)
+    if (fgets (buff, (int)sz, stdin) == NULL)
         return DERRICK_NO_INPUT;
 
     // If it was too long, there'll be no newline. In that case, we flush
@@ -81,7 +94,7 @@ int main(int argc, char *argv[])
     DerrickIndex pIndexBuffer = 0;
 
     // Main command loop
-    while (strcmp(buff, "quit"))
+    while (strcmp(buff, CMD_QUIT))
     {
         rc = getLine ("search> ", buff, sizeof(buff));
 
@@ -143,7 +156,7 @@ int main(int argc, char *argv[])
             const char* param = buff + strlen(CMD_BASE) + 1;
             if (param)
             {
-                base = strdup(buff + strlen(CMD_BASE) + 1);
+                base = _strdup(buff + strlen(CMD_BASE) + 1);
                 printf("Base directory [%s]\n", base);
             }
         }
@@ -172,7 +185,7 @@ int main(int argc, char *argv[])
                 printf("Number of files: %d\n", derrick_count_files(base, &cb));
             }
         }
-        else
+        else if (!(strlen(buff) >= strlen(CMD_QUIT) && !strncmp(buff, CMD_QUIT, strlen(CMD_QUIT))))
         {
             printf ("UNKNOWN [%s]\n", buff);
         }

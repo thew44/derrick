@@ -13,17 +13,23 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Installing
 
-Build it
-
+#### Build library
 ```
-qmake search.pro
+qmake derrick.pro
 mingw32-make
 ```
 ...or just copy derrick.c and derrick.h to your project.
 
-## Running the tests
+#### Build test program 'search'
+```
+qmake search.pro
+mingw32-make
+```
+You do not need to build the library prior building the test program.
 
-Run the test program by executing search.exe
+## Running the test
+Then run the test program by executing search.exe
+
 
 ### Indexed search
 ```

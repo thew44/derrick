@@ -3,15 +3,13 @@ QT -= gui
 
 CONFIG += release
 
-TARGET = search
-CONFIG += console
+TARGET = derrick
 CONFIG -= app_bundle
 
-TEMPLATE = app
+TEMPLATE = lib
 
 SOURCES += \
-    derrick.c \
-    search.c
+    derrick.c
 
 DEFINES += _CRT_SECURE_NO_WARNINGS
 

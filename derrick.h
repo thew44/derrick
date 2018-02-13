@@ -1,20 +1,21 @@
 /**
- * @file        derrick.c
+ * @file        derrick.h
  * @author      Mathieu Allory
- * @date        January 2018
- * @brief       Inspector Derrick's deep file search library
+ * @date        February 2018
+ * @brief       Derrick DFS: deep file search and indexing library
+ * @ref         https://github.com/thew44/derrick
  *
- * @details     This header provides the definitions required to use derrick DFS
+ * @details     This header provides the definitions required to use Derrick DFS
  *
- * @license
+ * @license     MIT License
  */
 
 // Status codes returned by functions
 #define DERRICK_OK              0
-#define DERRICK_NO_INPUT        1
-#define DERRICK_TOO_LONG        2
-#define DERRICK_PATH_NOT_FOUND  3
-#define DERRICK_ERROR           4
+#define DERRICK_NO_INPUT        -2
+#define DERRICK_TOO_LONG        -3
+#define DERRICK_PATH_NOT_FOUND  -4
+#define DERRICK_ERROR           -1
 
 // Some compiler dependent stuffs
 #ifdef _MSC_VER
