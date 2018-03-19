@@ -360,24 +360,27 @@ int derrick_deep_search(const char* i_searchfor, const char *i_searchin, Derrick
 
 
                 // Compare memory
-                void* offset = (void*)pBuf;
+                void* offset = (void*)pBuf;                                
                 for (size_t i = 0; i < (this_size.QuadPart - strlen(i_searchfor)); ++i)
                 {
-                    if (0 == memcmp(offset, i_searchfor, strlen(i_searchfor)))
+                    // Comparison function changes depending on case sensitivity
+                    if (io_cb->cd_found &&
+                        (
+                         (io_cb->param_case_sensitive <= 0 && 0 == _strnicmp(offset, i_searchfor, strlen(i_searchfor)))
+                         ||
+                         (0 == memcmp(offset, i_searchfor, strlen(i_searchfor)))
+                        )
+                       )
                     {
-                        if (io_cb->cd_found)
-                        {
-                            char* line = derrick_internal_find_line((const char*)offset);
-                            io_cb->cd_found(io_cb->ctx_found, sPath, line);
-                            free(line);
-                        }
+                        char* line = derrick_internal_find_line((const char*)offset);
+                        io_cb->cd_found(io_cb->ctx_found, sPath, line);
+                        free(line);
                     }
 #ifdef _MSC_VER
                     ++((BYTEP*)offset);
 #else
                     ++offset;
 #endif
-
                 }
 
                 UnmapViewOfFile(pBuf);

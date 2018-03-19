@@ -23,85 +23,98 @@
 #else
 # define BYTEP void
 #endif
+#ifdef _WIN32
+# define DERRICK_EXPORT __declspec(dllexport)
+#else
+# define DERRICK_EXPORT __attribute__ ((dllexport) 
+#endif
 
-// Definition of the callback called to determine whether
-// a file shall be excluded from search
-// return 0 -> keep the file
-// return != 0 -> exclude the file
-typedef int  (*derrick_cb_exclude_t)(void* context, const char* file);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-// Callback called when a match is found
-typedef void (*derrick_cb_found_t)  (void* context, const char* in, const char* what);
+    // Definition of the callback called to determine whether
+    // a file shall be excluded from search
+    // return 0 -> keep the file
+    // return != 0 -> exclude the file
+    typedef int(*derrick_cb_exclude_t)(void* context, const char* file);
 
-// Structure containing the parameters for some function calls
-struct Derrick_Parameters_s
-{
-    derrick_cb_exclude_t cb_exclude;
-    derrick_cb_found_t cd_found;
-    void* ctx_exclude;
-    void* ctx_found;
-    int param_case_sensitive; // Not used, reserved
-};
-typedef struct Derrick_Parameters_s * Derrick_Parameters;
+    // Callback called when a match is found
+    typedef void(*derrick_cb_found_t)  (void* context, const char* in, const char* what);
 
-// Structure containing the index for index-based funtions
-struct DerrickIndex_s
-{
-    size_t number_of_entries;
-    struct Derrick_EntryHeader_s* index;
-};
-typedef struct DerrickIndex_s * DerrickIndex;
+    // Structure containing the parameters for some function calls
+    struct Derrick_Parameters_s
+    {
+        derrick_cb_exclude_t cb_exclude;
+        derrick_cb_found_t cd_found;
+        void* ctx_exclude;
+        void* ctx_found;
+        int param_case_sensitive; // Not used, reserved
+    };
+    typedef struct Derrick_Parameters_s * Derrick_Parameters;
 
-// This structure is for internal use
-struct Derrick_EntryHeader_s
-{
-    size_t size;
-    char name[];
-};
+    // Structure containing the index for index-based funtions
+    struct DerrickIndex_s
+    {
+        size_t number_of_entries;
+        struct Derrick_EntryHeader_s* index;
+    };
+    typedef struct DerrickIndex_s * DerrickIndex;
 
-/**
- * @brief Initialize a parameter structure with neutral values
- * @param io_cb the structure to initialize
- */
-void derrick_init_parameters(Derrick_Parameters io_cb);
+    // This structure is for internal use
+    struct Derrick_EntryHeader_s
+    {
+        size_t size;
+        char name[];
+    };
 
-/**
- * @brief Build an in-memory index from the files contained in a given directory i_path
- * @param io_index Address of pointer where the structure will be created
- * @param i_path Path to index
- * @return DERRICK_OK if no error
- */
-int derrick_index_build(DerrickIndex* io_index, const char* i_path);
+    /**
+     * @brief Initialize a parameter structure with neutral values
+     * @param io_cb the structure to initialize
+     */
+    DERRICK_EXPORT void derrick_init_parameters(Derrick_Parameters io_cb);
 
-/**
- * @brief list on standard output the files contained in a given index
- * @param i_index the index previously built with derrick_index_build
- */
-void derrick_index_list(DerrickIndex i_index);
+    /**
+     * @brief Build an in-memory index from the files contained in a given directory i_path
+     * @param io_index Address of pointer where the structure will be created
+     * @param i_path Path to index
+     * @return DERRICK_OK if no error
+     */
+    DERRICK_EXPORT int derrick_index_build(DerrickIndex* io_index, const char* i_path);
 
-/**
- * @brief search for the file(s) containing a given string within the given index.
- * Indexed search is very fast but consumes a lot of memory and not synchronized with hard drive.
- * @param i_index the index previously built with derrick_index_build
- * @param i_searchfor the string the look for
- * @param io_cb the callbacks and parameters, see definition
- */
-void derrick_index_search(DerrickIndex i_index, const char* i_searchfor, Derrick_Parameters io_cb);
+    /**
+     * @brief list on standard output the files contained in a given index
+     * @param i_index the index previously built with derrick_index_build
+     */
+    DERRICK_EXPORT void derrick_index_list(DerrickIndex i_index);
 
-/**
- * @brief count the files that would be searched, the same way as derrick_deep_search would do
- * but without actually looking inside the file
- * @param i_searchin the root path to search in
- * @return the total number of files that matches the criteria of io_cb->cb_exclude, or -1 in case of error
- */
-int derrick_count_files(const char* i_searchin, Derrick_Parameters io_cb);
+    /**
+     * @brief search for the file(s) containing a given string within the given index.
+     * Indexed search is very fast but consumes a lot of memory and not synchronized with hard drive.
+     * @param i_index the index previously built with derrick_index_build
+     * @param i_searchfor the string the look for
+     * @param io_cb the callbacks and parameters, see definition
+     */
+    DERRICK_EXPORT void derrick_index_search(DerrickIndex i_index, const char* i_searchfor, Derrick_Parameters io_cb);
 
-/**
- * @brief search for the file(s) containing a given string i_searchfor in directory i_searchin by
- * examining all the files on the disk. The actual content of every file is scanned.
- * @param i_searchfor the string to look for
- * @param i_searchin the root path to search in
- * @param io_cb the callbacks and parameters, see definition
- * @return DERRICK_OK if no error
- */
-int derrick_deep_search(const char* i_searchfor, const char* i_searchin, Derrick_Parameters io_cb);
+    /**
+     * @brief count the files that would be searched, the same way as derrick_deep_search would do
+     * but without actually looking inside the file
+     * @param i_searchin the root path to search in
+     * @return the total number of files that matches the criteria of io_cb->cb_exclude, or -1 in case of error
+     */
+    DERRICK_EXPORT int derrick_count_files(const char* i_searchin, Derrick_Parameters io_cb);
+
+    /**
+     * @brief search for the file(s) containing a given string i_searchfor in directory i_searchin by
+     * examining all the files on the disk. The actual content of every file is scanned.
+     * @param i_searchfor the string to look for
+     * @param i_searchin the root path to search in
+     * @param io_cb the callbacks and parameters, see definition
+     * @return DERRICK_OK if no error
+     */
+    DERRICK_EXPORT int derrick_deep_search(const char* i_searchfor, const char* i_searchin, Derrick_Parameters io_cb);
+
+#ifdef __cplusplus
+}
+#endif
